@@ -1,24 +1,12 @@
 #include "Frame.h"
 
-void Frame::childs_draw() {
-	for (int i = 0; i < childs.size(); i++) {
-		childs[i]->draw();
-	}
-	return;
-}
-
-void Frame::draw() {
-	childs_draw();
-	return;
-}
-
-Frame::Frame() {
+void Frame::reset() {
 	//変数の初期化
+	root = nullptr; //rootフレームのポインタ
 	parent = nullptr; //親フレームのポインタ
-	num_child = 0; //子フレームの数
 	index = 0;//同フレーム内の自フレームの割当番号(=0,1,2,3,...)
 	pos = { 0,0,0,0 }; //フレーム座標
-	size = {0, 0}; //フレームサイズ(末端フレームのみ代入)
+	size = { 0, 0 }; //フレームサイズ(末端フレームのみ代入)
 	name = ""; //フレームの名称
 	description = ""; //フレーム内のUIの解説
 	mode = 0; //子フレームが縦並び=0,横並び=1
@@ -26,173 +14,192 @@ Frame::Frame() {
 	length = 0; //全フレームが初期値サイズ時の自フレームのサイズ
 	lock = 0; //各子フレームの長さ(mode=0なら縦幅,mode=1なら横幅)の固定on/off
 	lock_length = 0; //固定サイズの全子フレームと全gapの和(末端フレームは0を代入)
-}
-
-void FrameManagement::add(Frame *parent, Frame *self, std::string name, int length, bool lock) {
-	self->parent = parent; //親フレームのポインタ
-	self->num_child = 0; //子フレームの数初期化
-	self->pos.left = 0; //フレーム左座標
-	self->pos.top = 0; //フレーム上座標
-	self->pos.right = 0; //フレーム右座標
-	self->pos.bottom = 0; //フレーム下座標
-	self->size = { 0,0 }; //フレームサイズ
-	self->name = name; //フレームの名称
-	self->description = ""; //解説はオプションなのでとりあえず無記入
-	self->mode = 0; //子フレームが縦並び=0,横並び=1
-	self->gap = 0; //子フレーム間同士の隙間(px単位)
-	self->length = length; //全フレームが初期値サイズ時の自フレームのサイズ
-	self->lock = lock; //現在の自フレームの長さ(mode = 0なら縦幅, mode = 1なら横幅)の固定のon/off
-	self->index = 0;
-	self->lock_length = 0; //固定サイズの全子フレームと全gapの和(末端フレームは0を代入)
-						   //親フレームが未指定の場合、以下の処理を省く
-	if (parent == nullptr) {
-		return;
-	}
-	self->parent->childs.push_back(self); //親フレームに自フレーム追加登録
-	self->index = self->parent->num_child;//同フレーム内の自フレームの割当番号(=0,1,2,3,...)
-	self->parent->num_child += 1; //親フレーム情報更新
 	return;
 }
 
-void FrameManagement::set_parent(Frame *self, bool mode, int gap) {
-	self->mode = mode; //子フレームが横並びなら0,縦並びなら1
-	self->gap = gap; //小フレーム間の隙間サイズ(px単位)
+void Frame::main_draw() {
 	return;
 }
 
-void FrameManagement::set_description(Frame *self, std::string description) {
-	self->description = description;
-}
-
-void FrameManagement::get_length(Frame *f) {
-	if (f->num_child != 0) {
-		f->length = 0; //全子フレームと全gapの和
-		f->lock_length = 0; //固定サイズの全子フレームと全gapの和(末端フレームは0を代入)
-		//子フレームの個数分ループ
-		for (int i = 0; i < f->num_child; i++) {
-			//子フレームが子フレームを持っていた場合、再帰
-			if (f->childs[i]->num_child != 0) {
-				get_length(f->childs[i]);
-			}
-			//親フレームの長さに子フレームの長さを足していく
-			f->length += f->childs[i]->length;
-			//もし子フレームが末端フレームで、固定サイズフレームの場合
-			if (f->childs[i]->lock) {
-				f->lock_length += f->childs[i]->length;
-			}
-		}
-		//全gapを足す
-		f->length += f->gap * (f->num_child + 1);
-		f->lock_length += f->gap * (f->num_child + 1);
+void Frame::childs_draw() {
+	for (int i = 0; i < childs.size(); i++) {
+		childs[i]->draw();
 	}
 	return;
 }
 
-void FrameManagement::sub_resize(Frame *f, RECT pos) {
-	f->size.x = pos.right - pos.left;
-	f->size.y = pos.bottom - pos.top;
-	f->pos = pos;
-	//子フレームがあれば、子フレームの配置もしておく
-	//lengthとsizeのサイズ変更
-	if (f->num_child != 0) {
-		if (f->mode) {
+void Frame::set_data() {
+
+}
+
+void Frame::when_create() {
+	get_index();
+	get_root();
+	root->get_length();
+	root->resize();
+}
+
+void Frame::resize(){
+	size.x = pos.right - pos.left;
+	size.y = pos.bottom - pos.top;
+	if (childs.size() != 0) {
+		if (mode) {
 			//横並びの場合
 			//子フレーム分ループ
-			for (int i = 0; i < f->num_child; i++) {
-				//i個目の子フレーム位置変数初期化
-				RECT child_pos;
+			for (int i = 0; i < childs.size(); i++) {
 				//i個目の子フレーム位置算出
 				//上下位置
-				child_pos.top = f->pos.top + f->gap;
-				child_pos.bottom = f->pos.bottom - f->gap;
+				childs[i]->pos.top = pos.top + gap;
+				childs[i]->pos.bottom = pos.bottom - gap;
 				//左位置
 				if (i == 0) {
-					child_pos.left = f->pos.left + f->gap;
+					childs[i]->pos.left = pos.left + gap;
 				}
 				else {
-					child_pos.left = f->childs[i - 1]->pos.right + f->gap;
+					childs[i]->pos.left = childs[i - 1]->pos.right + gap;
 				}
 				//右位置
-				if (f->childs[i]->lock) {
+				if (childs[i]->lock) {
 					//固定サイズフレームの場合は割合変換不要
-					child_pos.right =
-						child_pos.left +
-						f->childs[i]->length;
+					childs[i]->pos.right =
+						childs[i]->pos.left +
+						childs[i]->length;
 				}
 				else {
 					//非固定サイズフレームの場合は割合計算
-					child_pos.right =
-						child_pos.left +
+					childs[i]->pos.right =
+						childs[i]->pos.left +
 						Utility::Proportion(
-							f->childs[i]->length,
+							childs[i]->length,
 							0,
-							f->length - f->lock_length,
+							length - lock_length,
 							0,
-							f->size.x - f->lock_length
+							size.x - lock_length
 						);
 				}
 				//子フレーム位置設定
-				resize(f->childs[i], child_pos);
+				childs[i]->resize();
 			}
 		}
 		else {
 			//縦並びの場合
 			//子フレーム分ループ
-			for (int i = 0; i < f->num_child; i++) {
-				//i個目の子フレーム位置変数初期化
-				RECT child_pos;
+			for (int i = 0; i < childs.size(); i++) {
 				//i個目の子フレーム位置算出
 				//左右位置
-				child_pos.left = f->pos.left + f->gap;
-				child_pos.right = f->pos.right - f->gap;
+				childs[i]->pos.left = pos.left + gap;
+				childs[i]->pos.right = pos.right - gap;
 				//上位置
 				if (i == 0) {
-					child_pos.top = f->pos.top + f->gap;
+					childs[i]->pos.top = pos.top + gap;
 				}
 				else {
-					child_pos.top = f->childs[i - 1]->pos.bottom + f->gap;
+					childs[i]->pos.top = childs[i - 1]->pos.bottom + gap;
 				}
 				//下位置
-				if (f->childs[i]->lock) {
+				if (childs[i]->lock) {
 					//固定サイズフレームorスクロール可フレームの場合は割合変換不要
-					child_pos.bottom =
-						child_pos.top +
-						f->childs[i]->length;
+					childs[i]->pos.bottom =
+						childs[i]->pos.top +
+						childs[i]->length;
 				}
 				else {
 					//非固定サイズフレームの場合は割合計算
-					child_pos.bottom =
-						child_pos.top +
+					childs[i]->pos.bottom =
+						childs[i]->pos.top +
 						Utility::Proportion(
-							f->childs[i]->length,
+							childs[i]->length,
 							0,
-							f->length - f->lock_length,
+							length - lock_length,
 							0,
-							f->size.y - f->lock_length
+							size.y - lock_length
 						);
 				}
 				//子フレーム位置設定
-				resize(f->childs[i], child_pos);
+				childs[i]->resize();
 			}
 		}
 	}
 	return;
 }
 
-void FrameManagement::resize(Frame *f, RECT pos) {
-	get_length(f);
-	sub_resize(f, pos);
+void Frame::draw() {
+	main_draw();
+	childs_draw();
+	return;
 }
 
-Frame* FrameManagement::get_root(Frame *f) {
-	Frame *b_f; //フレームポインタ一時代入用変数
-	b_f = f;
-	while (true) {
-		if (b_f->parent != nullptr) {
-			b_f = b_f->parent;
+void Frame::get_length() {
+	if (childs.size() != 0) {
+		length = 0; //全子フレームと全gapの和
+		lock_length = 0; //固定サイズの全子フレームと全gapの和(末端フレームは0を代入)
+		//子フレームの個数分ループ
+		for (int i = 0; i < childs.size(); i++) {
+			//子フレームが子フレームを持っていた場合、再帰
+			if (childs.size() != 0) {
+				childs[i]->get_length();
+			}
+			//親フレームの長さに子フレームの長さを足していく
+			length += childs[i]->length;
+			//もし子フレームが末端フレームで、固定サイズフレームの場合
+			if (childs[i]->lock) {
+				lock_length += childs[i]->length;
+			}
 		}
-		else {
-			return b_f;
-		}
+		//全gapを足す
+		length += gap * (childs.size() + 1);
+		lock_length += gap * (childs.size() + 1);
 	}
+	return;
+}
+
+void Frame::get_root() {
+	if (parent != nullptr) {
+		parent->get_root();
+		root = parent->root;
+	}
+	else {
+		root = this;
+	}
+return;
+}
+
+void Frame::get_index() {
+	if (parent != nullptr) {
+		index = parent->childs.size() - 1;
+	}
+	else {
+		index = 0;
+	}
+}
+
+Frame::Frame(Frame *set_parent, int set_length, bool set_lock) {
+	reset();
+	parent = set_parent;
+	length = set_length;
+	lock = set_lock;
+	when_create();
+}
+
+FrameManagement::FrameManagement() {
+	parent = nullptr;
+}
+
+void FrameManagement::set_parent(Frame *f) {
+	parent = f;
+	return;
+}
+
+Frame* FrameManagement::create(int length, bool lock) {
+	Frame *f = new Frame(parent, length, lock);
+	return f;
+}
+Frame* FrameManagement::create() {
+	Frame *f = create(0, 0);
+	return f;
+}
+Frame* FrameManagement::create(std::string name, int length, bool lock) {
+	Frame *f = create(length, lock);
+	f->name = name;
+	return;
 }

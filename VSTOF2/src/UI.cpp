@@ -1,18 +1,18 @@
 #include "UI.h"
 
-UI::Graph::Graph() {
+Graph::Graph(Frame *set_parent, int set_length, bool set_lock) : Frame(set_parent, set_length, set_lock) {
 	FillWave = 0;
 }
 
-void UI::Graph::set_data(graph set_g) {
+void Graph::set_data(graph set_g) {
 	g = set_g;
 }
 
-void UI::Graph::fill_wave(bool Enable) {
+void Graph::fill_wave(bool Enable) {
 	FillWave = Enable;
 }
 
-void UI::Graph::draw() {
+void Graph::main_draw() {
 	//描画効率化のため、ピクセルの数に合わせて描画
 	int index = 0; //配列から値を参照するときのインデックス
 	float percentage = 0.0f;
@@ -55,4 +55,6 @@ void UI::Graph::draw() {
 		}
 		b_height = height; //前フレームのときのheight取得用
 	}
+	//自フレーム以下のすべての子フレーム描画
+	childs_draw();
 }

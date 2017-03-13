@@ -10,12 +10,12 @@
 class Graph : public Frame {
 private:
 	bool FillWave;
+	void main_draw();
 public:
-	Graph();
+	Graph(Frame *set_parent, int set_length, bool set_lock);
 	graph g;
 	void set_data(graph set_g);
 	void fill_wave(bool Enable);
-	void draw();
 };
 
 //ボタン描画クラス

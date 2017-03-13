@@ -5,13 +5,23 @@
 
 //フレーム基底クラス
 class Frame {
-private:
+protected:
+	//全変数初期化
+	void reset();
+	//子フレームから自フレームのlengthとlock_lengthを算出(子フレームが追加されるたびにrootフレームのこの関数を呼ぶ)
+	void get_length();
+	//rootフレームのポインタ取得
+	void get_root();
+	//自フレームのインデックス番号取得
+	void get_index();
+	//自フレームの中に描画する関数
+	virtual void main_draw();
 	//自フレーム以下の全子フレームのdraw関数実行
 	void childs_draw();
 public:
 	//変数
+	Frame *root; //rootフレームのポインタ
 	Frame *parent; //親フレームのポインタ
-	int num_child; //子フレームの数
 	std::vector<Frame*> childs; //全子フレームのポインタ配列
 	int index;//同フレーム内の自フレームの割当番号(=0,1,2,3,...)
 	RECT pos; //フレーム座標
@@ -23,30 +33,32 @@ public:
 	int length; //全フレームが初期値サイズ時の自フレームのサイズ
 	bool lock; //各子フレームの長さ(mode=0なら縦幅,mode=1なら横幅)の固定on/off
 	int lock_length; //固定サイズの全子フレームと全gapの和(末端フレームは0を代入)
-	double fps;
 	WINDOW_INFO *win;
 
-	//関数
-	virtual void draw();
-	Frame();
+	//関数宣言
+	//変数の代入
+	virtual void set_data();
+	//フレーム追加時実行関数
+	virtual void when_create();
+	//自フレーム以下の全フレーム描画
+	void draw();
+	//自フレームのサイズに合わせて子フレームサイズ更新
+	void resize();
+	//コンストラクタ
+	Frame(Frame *set_parent, int set_length, bool set_lock);
 };
 
 //フレーム操作クラス
 class FrameManagement {
+private:
+	Frame *parent;
 public:
 	//関数宣言
-	//フレーム追加関数(引数:親フレーム(なければnullptr),自フレーム,フレーム名,子フレームの配列方法(0なら縦,1なら横),子フレーム間の間隔,自フレームの長さ(mode=0なら高さ,1なら幅),自フレームを固定サイズにするon/off)
-	void add(Frame *parent, Frame *self, std::string name, int length, bool lock);
-	//子フレームの並べ方設定関数
-	void set_parent(Frame *self, bool mode, int gap);
-	//フレームの解説記入
-	void set_description(Frame *self, std::string description);
-	//全フレームの登録完了時に、末端フレームから全親フレームのlength等取得関数
-	void get_length(Frame *f);
-	//全フレームの位置算出(引数1,2,3:自フレームのポインタ,自フレームを描画する位置,0なら長さは初期値のまま)
-	void sub_resize(Frame *f, RECT pos);
-	//指定フレーム以下のフレームすべての再配置
-	void resize(Frame *f, RECT pos);
-	//子フレームのポインタからrootフレームのポインタ取得
-	Frame* get_root(Frame *f);
+	FrameManagement();
+	//この関数の実行以降は追加するフレームの親フレームが常に引数のフレームになる
+	void set_parent(Frame *f);
+	//フレームの新規作成
+	Frame* create(int length, bool lock);
+	Frame* create();
+	Frame* create(std::string name, int length, bool lock);
 };
