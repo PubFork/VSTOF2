@@ -1,15 +1,10 @@
 #include "UI.h"
 
-Graph::Graph(Frame *set_parent, int set_length, bool set_lock) : Frame(set_parent, set_length, set_lock) {
-	FillWave = 0;
-}
-
-void Graph::set_data(graph set_g) {
+Graph::Graph(Frame *set_parent, graph set_g, int set_length, bool set_lock = 0, bool set_fill_wave = 0, std::string set_name = "", std::string set_description = "")
+	: Frame(set_parent, set_length, set_lock, set_name, set_description)
+{
 	g = set_g;
-}
-
-void Graph::fill_wave(bool Enable) {
-	FillWave = Enable;
+	fill_wave = set_fill_wave;
 }
 
 void Graph::main_draw() {
@@ -42,7 +37,7 @@ void Graph::main_draw() {
 			);
 		}
 		//“h‚è‚Â‚Ô‚µ
-		if (FillWave) {
+		if (fill_wave) {
 			if ((i / 10) % 2 == 0) {
 				ofSetColor(255, 255, 255, 255);
 				ofLine(

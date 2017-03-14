@@ -28,15 +28,31 @@ void Frame::childs_draw() {
 	return;
 }
 
-void Frame::set_data() {
-
+void Frame::when_create() {
+	//自フレームのインデックス番号取得
+	get_index();
+	//自フレームのツリーのrootフレーム取得
+	get_root();
+	//rootフレーム以下のlength等再算出
+	root->get_length();
+	//rootフレーム以下のフレーム再配置
+	root->resize();
+	//WINDOW_INFOを親フレームと同一のものにする
+	if (parent != nullptr) {
+		win = parent->win;
+	}
 }
 
-void Frame::when_create() {
-	get_index();
-	get_root();
-	root->get_length();
-	root->resize();
+void Frame::set_win_info(WINDOW_INFO *set_win) {
+	if ((root->win != set_win) && (this != root)) {
+		root->set_win_info(set_win);
+	}
+	else {
+		win = set_win;
+		for (int i = 0; i < childs.size(); i++) {
+			childs[i]->set_win_info(set_win);
+		}
+	}
 }
 
 void Frame::resize(){
@@ -173,33 +189,20 @@ void Frame::get_index() {
 	}
 }
 
-Frame::Frame(Frame *set_parent, int set_length, bool set_lock) {
+Frame::Frame(Frame *set_parent = nullptr, int set_length = 0, bool set_lock = 0, std::string set_name = "", std::string set_description = "") {
 	reset();
 	parent = set_parent;
 	length = set_length;
 	lock = set_lock;
+	name = set_name;
+	description = set_description;
 	when_create();
 }
-
-FrameManagement::FrameManagement() {
-	parent = nullptr;
-}
-
-void FrameManagement::set_parent(Frame *f) {
-	parent = f;
-	return;
-}
-
-Frame* FrameManagement::create(int length, bool lock) {
-	Frame *f = new Frame(parent, length, lock);
-	return f;
-}
-Frame* FrameManagement::create() {
-	Frame *f = create(0, 0);
-	return f;
-}
-Frame* FrameManagement::create(std::string name, int length, bool lock) {
-	Frame *f = create(length, lock);
-	f->name = name;
-	return;
+Frame::Frame(bool set_mode, Frame *set_parent, std::string set_name = "", std::string set_description = "") {
+	reset();
+	mode = set_mode;
+	parent = set_parent;
+	name = set_name;
+	description = set_description;
+	when_create();
 }

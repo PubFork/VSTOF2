@@ -36,29 +36,15 @@ public:
 	WINDOW_INFO *win;
 
 	//関数宣言
-	//変数の代入
-	virtual void set_data();
 	//フレーム追加時実行関数
 	virtual void when_create();
+	//WINDOW_INFOポインタ代入
+	void set_win_info(WINDOW_INFO *set_win);
 	//自フレーム以下の全フレーム描画
 	void draw();
 	//自フレームのサイズに合わせて子フレームサイズ更新
 	void resize();
 	//コンストラクタ
-	Frame(Frame *set_parent, int set_length, bool set_lock);
-};
-
-//フレーム操作クラス
-class FrameManagement {
-private:
-	Frame *parent;
-public:
-	//関数宣言
-	FrameManagement();
-	//この関数の実行以降は追加するフレームの親フレームが常に引数のフレームになる
-	void set_parent(Frame *f);
-	//フレームの新規作成
-	Frame* create(int length, bool lock);
-	Frame* create();
-	Frame* create(std::string name, int length, bool lock);
+	Frame(Frame *set_parent = nullptr, int set_length = 0, bool set_lock = 0, std::string set_name = "", std::string set_description = "");
+	Frame(bool set_mode, Frame *set_parent, std::string set_name = "", std::string set_description = "");
 };

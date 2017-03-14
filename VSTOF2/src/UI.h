@@ -9,13 +9,12 @@
 //グラフ描画クラス
 class Graph : public Frame {
 private:
-	bool FillWave;
+	//波形を塗りつぶすかどうか
+	bool fill_wave;
 	void main_draw();
 public:
-	Graph(Frame *set_parent, int set_length, bool set_lock);
 	graph g;
-	void set_data(graph set_g);
-	void fill_wave(bool Enable);
+	Graph(Frame *set_parent, graph set_g, int set_length, bool set_lock = 0, bool set_fill_wave = 0, std::string set_name = "", std::string set_description = "");
 };
 
 //ボタン描画クラス

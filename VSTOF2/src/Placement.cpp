@@ -1,8 +1,53 @@
 #include "Placement.h"
 
+VSTParameteresFrames::VSTParameteresFrames() {
+	/*
+	Frame(Frame *set_parent = nullptr, int set_length = 0, bool set_lock = 0, std::string set_name = "", std::string set_description = "");
+	Frame(bool set_mode, Frame *set_parent, std::string set_name = "", std::string set_description = "");
+	*/
+	window = new Frame(0, nullptr, "window"); //ウィンドウと同期用フレーム
+
+	Frame *root; //パラメータ関係のフレームツリーのrootフレーム
+	Frame *tone; //音色設定フレーム
+	Frame *fade; //フェード設定フレーム
+				 //音色系
+	Button *make_auto; //自動で音色を生成するか
+	Frame *raw_wave_para; //下記インデントを束ねる
+						  //生波形データ派生
+	Button *use_rawwave; //生波形データの使用をするかどうか
+	Graph *rawwave; //生波形の使用部分波形(ファイルマッピングにするかも(´・ω・｀))
+	Graph *base_pitch; //基音位置(手動変更可)
+	Frame *tone_para; //下記インデントのフレームを束ねる
+	Button *change_natural; //音程変化を自然にするか
+	Graph *overtones; //倍音グラフor共鳴スペクトルグラフ
+	Figure *iovertones; //倍音の数
+	WaveForm *wave_type; //基本波形の形
+						 //再生中変更できると便利なパラメーター
+	Frame *hostpar;
+	Volume *vol;
+	Volume *pitch; //MIDI値に加算
+				   //波形の絶対値の上限
+	Graph *wave_limit;
+	//生成波形
+	Graph *outwave; //出力される波形
+					//フェード系
+	Button *use_string_mode; //弦モードの使用をするかどうか
+	Button *use_fade_change; //なめらかな音程,音量の変化を使用するかどうか(2つ同時に音を出せない)
+	Frame *fadein;
+	Graph *fadein_vol;
+	Graph *fadein_pitch;
+	Frame *fadeout;
+	Graph *fadeout_vol;
+	Graph *fadeout_pitch;
+	Frame *fadechange;
+	Graph *fadechange_vol;
+	Graph *fadechange_pitch;
+}
+
 Parameteres::Parameteres() { //全パラメーター分のフレーム作成
 	//フレーム生成
 	//frame_m.add(frame *parent, frame *self, std::string name, int length, bool lock)
+	/*
 	frame_m.add(nullptr, &p_frame.window, "window", 0, 0);
 	frame_m.add(nullptr, &p_frame.root, "root", 0, 0);
 	frame_m.add(&p_frame.root, &p_frame.tone, "tone", 0, 0); //音色設定フレーム生成
@@ -50,6 +95,7 @@ Parameteres::Parameteres() { //全パラメーター分のフレーム作成
 
 	frame_m.get_length(&p_frame.root); //root下全フレームのlength等取得
 	frame_m.resize(&p_frame.root, { 0,0,1,p_frame.root.length }); //rootフレーム一時リサイズ
+	*/
 
 	//ツリー構造のCUI描画(DEBUG用)
 	Debug::draw_node_name(&p_frame.root);
