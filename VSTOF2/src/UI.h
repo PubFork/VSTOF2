@@ -14,8 +14,14 @@ private:
 	void main_draw();
 public:
 	graph g;
-	Graph(Frame *set_parent, graph set_g, int set_length, bool set_lock = 0, bool set_fill_wave = 0, std::string set_name = "", std::string set_description = "");
+	Graph(graph set_g, int set_length, Frame *set_parent = nullptr, bool set_lock = 0, bool set_fill_wave = 0, std::string set_name = "", std::string set_description = "");
 };
+
+//フェードグラフ描画クラス
+class Fade : public Frame {
+
+};
+
 
 //ボタン描画クラス
 class Button : public Frame {

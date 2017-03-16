@@ -1,104 +1,68 @@
 #include "Placement.h"
 
-VSTParameteresFrames::VSTParameteresFrames() {
+Parameteres::Parameteres() { //全パラメーター分のフレーム作成
+	//一時変数初期化
+	graph g_buf;
+	//フレーム生成
 	/*
 	Frame(Frame *set_parent = nullptr, int set_length = 0, bool set_lock = 0, std::string set_name = "", std::string set_description = "");
 	Frame(bool set_mode, Frame *set_parent, std::string set_name = "", std::string set_description = "");
+	Graph(graph set_g, int set_length, Frame *set_parent = nullptr, bool set_lock = 0, bool set_fill_wave = 0, std::string set_name = "", std::string set_description = "");
 	*/
-	window = new Frame(0, nullptr, "window"); //ウィンドウと同期用フレーム
-
-	Frame *root; //パラメータ関係のフレームツリーのrootフレーム
-	Frame *tone; //音色設定フレーム
-	Frame *fade; //フェード設定フレーム
-				 //音色系
-	Button *make_auto; //自動で音色を生成するか
-	Frame *raw_wave_para; //下記インデントを束ねる
-						  //生波形データ派生
-	Button *use_rawwave; //生波形データの使用をするかどうか
-	Graph *rawwave; //生波形の使用部分波形(ファイルマッピングにするかも(´・ω・｀))
-	Graph *base_pitch; //基音位置(手動変更可)
-	Frame *tone_para; //下記インデントのフレームを束ねる
-	Button *change_natural; //音程変化を自然にするか
-	Graph *overtones; //倍音グラフor共鳴スペクトルグラフ
-	Figure *iovertones; //倍音の数
-	WaveForm *wave_type; //基本波形の形
-						 //再生中変更できると便利なパラメーター
-	Frame *hostpar;
-	Volume *vol;
-	Volume *pitch; //MIDI値に加算
-				   //波形の絶対値の上限
-	Graph *wave_limit;
+	p_frame.window = new Frame(1, nullptr, "window"); //ウィンドウと同期用フレーム
+	p_frame.root = new Frame(0, nullptr, "root"); //パラメータ関係のフレームツリーのrootフレーム
+	p_frame.tone = new Frame(0, p_frame.root, "tone"); //音色設定フレーム
+	p_frame.fade = new Frame(0, p_frame.root, "fade"); //フェード設定フレーム
+	//音色系
+	p_frame.make_auto = new Button; //自動で音色を生成するか
+	p_frame.raw_wave_para = new Frame(0, p_frame.tone, "raw_wave_para"); //下記インデントを束ねる
+	//生波形データ派生
+	p_frame.use_rawwave = new Button; //生波形データの使用をするかどうか
+	g_buf.samples = p_value->rawwave;
+	g_buf.num_sample = p_value->nrawwave;
+	g_buf.end_index = g_buf.num_sample;
+	p_frame.rawwave = new Graph(g_buf, 100, p_frame.raw_wave_para, "rawwave"); //生波形の使用部分波形(ファイルマッピングにするかも(´・ω・｀))
+	g_buf.samples = p_value->overtones;
+	g_buf.num_sample = p_value->iovertones;
+	g_buf.end_index = g_buf.num_sample;
+	p_frame.base_pitch = new Graph(g_buf, 100, p_frame.raw_wave_para, "base_pitch"); //基音位置(手動変更可)
+	p_frame.tone_para = new Frame(0, p_frame.tone, "tone_para"); //下記インデントのフレームを束ねる
+	p_frame.change_natural = new Button; //音程変化を自然にするか
+	g_buf.samples = p_value->overtones;
+	g_buf.num_sample = p_value->iovertones;
+	g_buf.end_index = g_buf.num_sample;
+	p_frame.overtones = new Graph(g_buf, 100, p_frame.tone_para, "overtones"); //倍音グラフor共鳴スペクトルグラフ
+	p_frame.iovertones = new Figure; //倍音の数
+	p_frame.wave_type = new WaveForm; //基本波形の形
+	//再生中変更できると便利なパラメーター
+	p_frame.hostpar = new Frame(1, p_frame.tone_para, "hostpar");
+	p_frame.vol = new Volume;
+	p_frame.pitch = new Volume; //MIDI値に加算
+	//波形の絶対値の上限
+	g_buf.samples = p_value->outwave;
+	g_buf.num_sample = p_value->noutwave;
+	g_buf.end_index = g_buf.num_sample;
+	p_frame.wave_limit = new Graph(g_buf, 100, p_frame.tone, "wave_limit");
 	//生成波形
-	Graph *outwave; //出力される波形
-					//フェード系
-	Button *use_string_mode; //弦モードの使用をするかどうか
-	Button *use_fade_change; //なめらかな音程,音量の変化を使用するかどうか(2つ同時に音を出せない)
-	Frame *fadein;
-	Graph *fadein_vol;
-	Graph *fadein_pitch;
-	Frame *fadeout;
-	Graph *fadeout_vol;
-	Graph *fadeout_pitch;
-	Frame *fadechange;
-	Graph *fadechange_vol;
-	Graph *fadechange_pitch;
-}
-
-Parameteres::Parameteres() { //全パラメーター分のフレーム作成
-	//フレーム生成
-	//frame_m.add(frame *parent, frame *self, std::string name, int length, bool lock)
-	/*
-	frame_m.add(nullptr, &p_frame.window, "window", 0, 0);
-	frame_m.add(nullptr, &p_frame.root, "root", 0, 0);
-	frame_m.add(&p_frame.root, &p_frame.tone, "tone", 0, 0); //音色設定フレーム生成
-	frame_m.add(&p_frame.tone, &p_frame.make_auto, "make_auto", 200, 0); //自動で音色を生成するか
-	frame_m.add(&p_frame.tone, &p_frame.raw_wave_para, "raw_wave_para", 0, 0); //下記インデントを束ねる
-	frame_m.add(&p_frame.raw_wave_para, &p_frame.use_rawwave, "use_rawwave", 100, 0); //生波形データの使用をするかどうか
-	frame_m.add(&p_frame.raw_wave_para, &p_frame.rawwave, "rawwave", 100, 0); //生波形の使用部分波形(ファイルマッピングにするかも(´・ω・｀))
-	frame_m.add(&p_frame.raw_wave_para, &p_frame.base_pitch, "base_pitch", 100, 0); //基音位置(手動変更可)
-	frame_m.add(&p_frame.tone, &p_frame.tone_para, "tone_para", 0, 0); //下記インデントのフレームを束ねる
-	frame_m.add(&p_frame.tone_para, &p_frame.change_natural, "change_natural", 100, 0); //音程変化を自然にするか
-	frame_m.add(&p_frame.tone_para, &p_frame.overtones, "overtones", 100, 0); //倍音グラフor共鳴スペクトルグラフ
-	frame_m.add(&p_frame.tone_para, &p_frame.iovertones, "iovertones", 100, 0); //倍音の数
-	frame_m.add(&p_frame.tone_para, &p_frame.wave_type, "wave_type", 100, 0); //基本波形の形
-	frame_m.add(&p_frame.tone_para, &p_frame.hostpar, "hostpar", 0, 0); //下記インデントのフレームを束ねる
-	frame_m.add(&p_frame.hostpar, &p_frame.vol, "vol", 100, 0); //音量
-	frame_m.add(&p_frame.hostpar, &p_frame.pitch, "pitch", 100, 0); //音程(IDI値に加算)
-	frame_m.add(&p_frame.tone, &p_frame.wave_limit, "wave_limit", 100, 0); //波形の絶対値の上限
-	frame_m.add(&p_frame.tone, &p_frame.outwave, "outwave", 100, 0); //出力波形
-	frame_m.add(&p_frame.root, &p_frame.fade, "fade", 0, 0); //フェード設定フレーム生成
-	frame_m.add(&p_frame.fade, &p_frame.use_string_mode, "use_string_mode", 100, 0); //弦モードの使用をするかどうか
-	frame_m.add(&p_frame.fade, &p_frame.use_fade_change, "use_fade_change", 100, 0); //なめらかな音程,音量の変化を使用するかどうか(2つ同時に音を出せない)
-	frame_m.add(&p_frame.fade, &p_frame.fadein, "fadein", 0, 0);
-	frame_m.add(&p_frame.fadein, &p_frame.fadein_vol, "fadein_vol", 100, 0);
-	frame_m.add(&p_frame.fadein, &p_frame.fadein_pitch, "fadein_pitch", 100, 0);
-	frame_m.add(&p_frame.fade, &p_frame.fadeout, "fadeout", 0, 0);
-	frame_m.add(&p_frame.fadeout, &p_frame.fadeout_vol, "fadeout_vol", 100, 0);
-	frame_m.add(&p_frame.fadeout, &p_frame.fadeout_pitch, "fadeout_pitch", 100, 0);
-	frame_m.add(&p_frame.fade, &p_frame.fadechange, "fadechange", 0, 0);
-	frame_m.add(&p_frame.fadechange, &p_frame.fadechange_vol, "fadechange_vol", 100, 0);
-	frame_m.add(&p_frame.fadechange, &p_frame.fadechange_pitch, "fadechange_pitch", 100, 0);
-
-	//set_parent(frame *self, bool mode, int gap)
-	frame_m.set_parent(&p_frame.root, 0, 2);
-	frame_m.set_parent(&p_frame.hostpar, 1, 2);
-	frame_m.set_parent(&p_frame.fadein, 1, 2);
-	frame_m.set_parent(&p_frame.fadeout, 1, 2);
-	frame_m.set_parent(&p_frame.fadechange, 1, 2);
-	frame_m.set_parent(&p_frame.fadechange, 1, 2);
-
-	//set_description(frame *f, std::string description)
-	frame_m.set_description(&p_frame.tone, "Timbre setting");
-	frame_m.set_description(&p_frame.make_auto, "Automatically generate tone");
-	frame_m.set_description(&p_frame.use_rawwave, "Use raw sound source");
-	frame_m.set_description(&p_frame.rawwave, "Trimming");
-
-	frame_m.get_length(&p_frame.root); //root下全フレームのlength等取得
-	frame_m.resize(&p_frame.root, { 0,0,1,p_frame.root.length }); //rootフレーム一時リサイズ
-	*/
+	g_buf.samples = p_value->outwave;
+	g_buf.num_sample = p_value->noutwave;
+	g_buf.end_index = g_buf.num_sample;
+	p_frame.outwave = new Graph(g_buf, 100, p_frame.tone, "outwave"); //出力される波形
+	//フェード系
+	p_frame.use_string_mode = new Button; //弦モードの使用をするかどうか
+	p_frame.use_fade_change = new Button; //なめらかな音程,音量の変化を使用するかどうか(2つ同時に音を出せない)
+	p_frame.fadein = new Frame(1, p_frame.fade, "fadein");
+	p_frame.fadein_vol = new Fade;
+	p_frame.fadein_pitch = new Fade;
+	p_frame.fadeout = new Frame(1, p_frame.fade, "fadeout");
+	p_frame.fadeout_vol = new Fade;
+	p_frame.fadeout_pitch = new Fade;
+	p_frame.fadechange = new Frame(1, p_frame.fade, "fadechange");
+	p_frame.fadechange_vol = new Fade;
+	p_frame.fadechange_pitch = new Fade;
 
 	//ツリー構造のCUI描画(DEBUG用)
-	Debug::draw_node_name(&p_frame.root);
+	Debug::draw_node_name(p_frame.root);
 }
 
 void Draw::set_p_value(VSTParameteres *p_value) {

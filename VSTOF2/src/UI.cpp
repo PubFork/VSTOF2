@@ -1,6 +1,6 @@
 #include "UI.h"
 
-Graph::Graph(Frame *set_parent, graph set_g, int set_length, bool set_lock = 0, bool set_fill_wave = 0, std::string set_name = "", std::string set_description = "")
+Graph::Graph(graph set_g, int set_length, Frame *set_parent = nullptr, bool set_lock = 0, bool set_fill_wave = 0, std::string set_name = "", std::string set_description = "")
 	: Frame(set_parent, set_length, set_lock, set_name, set_description)
 {
 	g = set_g;

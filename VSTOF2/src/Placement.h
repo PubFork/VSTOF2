@@ -7,7 +7,7 @@
 #include "UI.h"
 
 //フレームの配置
-class VSTParameteresFrames {
+struct VSTParameteresFrames {
 	//変数初期化
 	Frame *window; //ウィンドウと同期用フレーム
 	Frame *root; //パラメータ関係のフレームツリーのrootフレーム
@@ -37,17 +37,14 @@ class VSTParameteresFrames {
 	Button *use_string_mode; //弦モードの使用をするかどうか
 	Button *use_fade_change; //なめらかな音程,音量の変化を使用するかどうか(2つ同時に音を出せない)
 	Frame *fadein;
-	Graph *fadein_vol;
-	Graph *fadein_pitch;
+	Fade *fadein_vol;
+	Fade *fadein_pitch;
 	Frame *fadeout;
-	Graph *fadeout_vol;
-	Graph *fadeout_pitch;
+	Fade *fadeout_vol;
+	Fade *fadeout_pitch;
 	Frame *fadechange;
-	Graph *fadechange_vol;
-	Graph *fadechange_pitch;
-
-	//コンストラクタ
-	VSTParameteresFrames();
+	Fade *fadechange_vol;
+	Fade *fadechange_pitch;
 };
 
 //パラメーターの値やフレーム変数管理クラス

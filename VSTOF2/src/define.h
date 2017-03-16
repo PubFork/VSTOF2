@@ -100,7 +100,8 @@ struct WindowPos {
 };
 
 //グラフのプロパティ
-struct graph {
+class graph {
+public:
 	float *samples; //波形本体
 	int num_sample; //波形のサンプル数
 	int start_index; //描画領域の始めの波形のサンプルのインデックス
@@ -111,5 +112,18 @@ struct graph {
 	float val_max; //描画領域のサンプル値の最大値
 	float val_lim_min; //描画領域のサンプル値の最小値の可動域の最小値
 	float val_lim_max; //描画領域のサンプル値の最大値の可動域の最大値
+	graph() {
+		//変数初期化
+		samples = nullptr; //波形本体
+		num_sample = 0; //波形のサンプル数
+		start_index = 0; //描画領域の始めの波形のサンプルのインデックス
+		end_index = 0; //描画領域の終わりの波形のサンプルのインデックス
+		zero_index_val = 0.0f; //波形のサンプルが0の地点のグラフ上の単位のx座標
+		last_index_val = 1.0f; //波形のサンプルが最終地点のグラフ上の単位のx座標
+		val_min = -1.0f; //描画領域のサンプル値の最小値
+		val_max = 1.0f; //描画領域のサンプル値の最大値
+		val_lim_min = -1.0f; //描画領域のサンプル値の最小値の可動域の最小値
+		val_lim_max = 1.0f; //描画領域のサンプル値の最大値の可動域の最大値
+	}
 };
 
