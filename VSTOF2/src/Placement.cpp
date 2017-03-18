@@ -74,19 +74,16 @@ bool Draw::resize(WINDOW_INFO win_info) { //描画領域変更
 	GetClientRect(win_info.hwnd, &win_info.window);
 	win_info.size.x = win_info.window.right - win_info.window.left;
 	win_info.size.y = win_info.window.bottom - win_info.window.top;
-	para.p_frame.window.pos.left = 0;
-	para.p_frame.window.pos.top = 0;
-	para.p_frame.window.pos.right = win_info.size.x;
-	para.p_frame.window.pos.bottom = win_info.size.y;
-	para.p_frame.window.size = win_info.size;
+	para.p_frame.window->pos.left = 0;
+	para.p_frame.window->pos.top = 0;
+	para.p_frame.window->pos.right = win_info.size.x;
+	para.p_frame.window->pos.bottom = win_info.size.y;
+	para.p_frame.window->size = win_info.size;
 	fps = win_info.fps;
-	gui.set_fps(fps);
 	return 0;
 }
 
 void Draw::loop() { //ループ中に呼び出す関数
-	//画面初期化
-	gui.reset();
 	//各パラメーター描画
 	VSTParameteresFrames *f = &para.p_frame;
 	VSTParameteres *p = para.p_value;
